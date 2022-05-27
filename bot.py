@@ -10,14 +10,14 @@ db = DB("db.db")
 @bot.event
 async def on_ready():
     print(f"Ready for {bot.user}")
-    print("Preparing tasks..")
-    check_news.start()
     print("Preparing db..")
     initial_sql = '''
     CREATE TABLE IF NOT EXISTS regist_info (channel_id string);
     CREATE TABLE IF NOT EXISTS board_history (title string, factor string);
     '''
-    db.execute(initial_sql)
+    await db.execute(initial_sql)
+    print("Preparing tasks..")
+    check_news.start()
 
 @bot.slash_command(guild_ids=guild_id)
 async def set_channel(ctx):
@@ -25,7 +25,7 @@ async def set_channel(ctx):
     sql = f'''
     INSERT INTO regist_info VALUSE ('{ctx.channel.id}')
     '''
-    db.execute(sql)
+    await db.execute(sql)
     print(f"Set channel to {ctx.channel.id}")
 
 
@@ -39,6 +39,14 @@ async def check_news():
     db_data = await db.execute_get(db_sql)
     print(fresh_data)
     print(db_data)
+    if fresh_data != db_data:
+        print("Updating..")
+        sql = '''
+        DELETE FROM board_history;
+        '''
+        for dt in fresh_data:
+            sql += f'INSERT INTO board_history VALUES ("{dt[0]}", "{dt[1]}");'
+        await db.execute(sql)
     print("Done!")
 
 

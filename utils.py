@@ -11,10 +11,10 @@ async def get_news():
     response = requests.get(target_url)
     soup = BeautifulSoup(response.text, 'html.parser')
     subjects_objects = soup.find_all("td", attrs={"data-table": "subject"})
-    return [(obj.text.replace("\n", ""), await onclick_to_factorstr(obj.get('onclick'))) for obj in subjects_objects]
+    return [(obj.text.replace("\n", ""), await onclick_to_factorstr(obj.find("a").get('onclick'))) for obj in subjects_objects]
 
 async def onclick_to_factorstr(onclick_text):
-    return onclick_text.replace('javascript:goView(', '').replace(')', '').replace('\n', '').replace("'", "").replace(', ', ' ')
+    return onclick_text.replace('javascript:goView(', '').replace(')', '').replace('\n', '').replace("'", "").replace(', ', ' ').replace(',', ' ')
 
 class DB:
     def __init__(self, dbname):
@@ -22,13 +22,13 @@ class DB:
     
     @staticmethod
     def sql_before(func):
-        def wrapper(sqls):
+        async def wrapper(self, sqls):
             sqls = [sql.replace('\n', '') for sql in sqls.split(';')]
             try:
                 sqls.remove('')
             except ValueError:
                 pass
-            func(sqls)
+            await func(self, sqls)
         return wrapper
 
     @sql_before
