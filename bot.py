@@ -1,7 +1,8 @@
 import os
 import discord
 from discord.ext import tasks
-from utils import DB, get_news
+from discord.embeds import Embed
+from utils import DB, get_news, factor_to_link
 from settings import guild_id
 
 bot = discord.Bot()
@@ -23,30 +24,45 @@ async def on_ready():
 async def set_channel(ctx):
     print(f"Setting channel to {ctx.channel.id}")
     sql = f'''
-    INSERT INTO regist_info VALUSE ('{ctx.channel.id}')
+    INSERT INTO regist_info VALUES ('{ctx.channel.id}')
     '''
     await db.execute(sql)
     print(f"Set channel to {ctx.channel.id}")
+    await ctx.respond('Channel set.')
 
+
+async def alert_news(news):
+    channel_ids = await db.execute_get('SELECT * FROM regist_info')
+    channels = [await bot.fetch_channel(int(cn_id[0])) for cn_id in channel_ids]
+
+    for channel in channels:
+        for dt in news:
+            embed = Embed(title="새로운 물리 자료", description=dt[0])
+            embed.add_field(name='바로가기', value=await factor_to_link(dt[1]))
+            await channel.send(content="@everyone", embed=embed)
+        
 
 @tasks.loop(hours=2)
 async def check_news():
     print("Checking news in board..")
-    db_sql = '''
-    SELECT * FROM board_history
-    '''
+    db_sql = 'SELECT * FROM board_history'
     fresh_data = await get_news()
     db_data = await db.execute_get(db_sql)
-    print(fresh_data)
-    print(db_data)
     if fresh_data != db_data:
         print("Updating..")
-        sql = '''
-        DELETE FROM board_history;
-        '''
+        sql_insert = ""
+        freshes = []
         for dt in fresh_data:
-            sql += f'INSERT INTO board_history VALUES ("{dt[0]}", "{dt[1]}");'
-        await db.execute(sql)
+            sql_query_exists = f'SELECT * FROM board_history WHERE factor="{dt[1]}"'
+            db_result = await db.execute_get(sql_query_exists)
+            if not db_result:
+                sql_insert += f'INSERT INTO board_history VALUES ("{dt[0]}", "{dt[1]}");'
+                print(f"New value found ({dt[0]}, {dt[1]})")
+                freshes.append(dt)
+            else:
+                print(f"Existing values ({dt[0]}, {dt[1]})")
+        await db.execute(sql_insert)
+        await alert_news(freshes)
     print("Done!")
 
 

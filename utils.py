@@ -11,7 +11,7 @@ async def get_news():
     response = requests.get(target_url)
     soup = BeautifulSoup(response.text, 'html.parser')
     subjects_objects = soup.find_all("td", attrs={"data-table": "subject"})
-    return [(obj.text.replace("\n", ""), await onclick_to_factorstr(obj.find("a").get('onclick'))) for obj in subjects_objects]
+    return [(obj.text.replace("\n", ""), await onclick_to_factorstr(obj.find("a").get('onclick'))) for obj in subjects_objects if '물리' in obj.text]
 
 async def onclick_to_factorstr(onclick_text):
     return onclick_text.replace('javascript:goView(', '').replace(')', '').replace('\n', '').replace("'", "").replace(', ', ' ').replace(',', ' ')
@@ -28,19 +28,19 @@ class DB:
                 sqls.remove('')
             except ValueError:
                 pass
-            await func(self, sqls)
+            cursor = self.db.cursor()
+            return await func(self, sqls, cursor)
         return wrapper
 
     @sql_before
-    async def execute(self, sqls):
+    async def execute(self, sqls, cursor):
         for command in sqls:
-            cursor = self.db.cursor()
             cursor.execute(command)
         self.db.commit()
+        return None
     
     @sql_before
-    async def execute_get(self, sqls):
+    async def execute_get(self, sqls, cursor):
         for command in sqls:
-            cursor = self.db.cursor()
-            cursor.execute(command)
+            cursor = cursor.execute(command)
         return cursor.fetchall()
