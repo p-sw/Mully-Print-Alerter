@@ -2,7 +2,7 @@ import os
 import discord
 from discord.ext import tasks
 from discord.embeds import Embed
-from utils import DB, get_news, factor_to_link
+from utils import DB, get_news, factor_to_link, get_files
 from settings import guild_id
 
 bot = discord.Bot()
@@ -38,7 +38,12 @@ async def alert_news(news):
     for channel in channels:
         for dt in news:
             embed = Embed(title="새로운 물리 자료", description=dt[0])
-            embed.add_field(name='바로가기', value=await factor_to_link(dt[1]))
+            link_value = f"[게시글 바로가기]({await factor_to_link(dt[1])})"
+            attaches = await get_files(dt[1])
+            attaches_value = '\n'.join([f"[파일: {attach[0]}](http://bupyeong.icehs.kr/{attach[1]})" for attach in attaches])
+            print(attaches_value)
+            embed.add_field(name='링크', value=link_value, inline=False)
+            embed.add_field(name='첨부파일 다운로드', value=attaches_value, inline=False)
             await channel.send(content="@everyone", embed=embed)
         
 
@@ -61,8 +66,8 @@ async def check_news():
                 freshes.append(dt)
             else:
                 print(f"Existing values ({dt[0]}, {dt[1]})")
-        await db.execute(sql_insert)
         await alert_news(freshes)
+        await db.execute(sql_insert)
     print("Done!")
 
 

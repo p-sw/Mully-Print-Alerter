@@ -13,6 +13,14 @@ async def get_news():
     subjects_objects = soup.find_all("td", attrs={"data-table": "subject"})
     return [(obj.text.replace("\n", ""), await onclick_to_factorstr(obj.find("a").get('onclick'))) for obj in subjects_objects if '물리' in obj.text]
 
+async def get_files(factors):
+    url = await factor_to_link(factors)
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, "html.parser")
+    file_list = soup.find("ul", attrs={"class": "list_file"})
+    attaches = file_list.find_all("a")
+    return [(attach.text, attach.get("href")) for attach in attaches]
+
 async def onclick_to_factorstr(onclick_text):
     return onclick_text.replace('javascript:goView(', '').replace(')', '').replace('\n', '').replace("'", "").replace(', ', ' ').replace(',', ' ')
 
