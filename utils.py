@@ -2,6 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import sqlite3
 from settings import target_url
+from settings import DB_HOST, DB_NAME, DB_USER, DB_PASS, DB_PORT
+import psycopg2 as pg
 
 async def factor_to_link(factors):
     factors = factors.split()
@@ -25,8 +27,14 @@ async def onclick_to_factorstr(onclick_text):
     return onclick_text.replace('javascript:goView(', '').replace(')', '').replace('\n', '').replace("'", "").replace(', ', ' ').replace(',', ' ')
 
 class DB:
-    def __init__(self, dbname):
-        self.db = sqlite3.connect(dbname)
+    def __init__(self):
+        self.db = pg.connect(
+            database=DB_NAME,
+            host=DB_HOST,
+            user=DB_USER,
+            password=DB_PASS,
+            port=DB_PORT
+        )
     
     @staticmethod
     def sql_before(func):

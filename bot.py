@@ -6,7 +6,7 @@ from utils import DB, get_news, factor_to_link, get_files
 from settings import guild_id
 
 bot = discord.Bot()
-db = DB("db.db")
+db = DB()
 
 @bot.event
 async def on_ready():
