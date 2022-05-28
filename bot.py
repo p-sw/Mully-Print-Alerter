@@ -1,5 +1,6 @@
 import os
 import discord
+from discord.errors import Forbidden
 from discord.ext import tasks
 from discord.embeds import Embed
 from utils import DB, get_news, factor_to_link, get_files
@@ -44,7 +45,11 @@ async def alert_news(news):
             print(attaches_value)
             embed.add_field(name='링크', value=link_value, inline=False)
             embed.add_field(name='첨부파일 다운로드', value=attaches_value, inline=False)
-            await channel.send(content="@everyone", embed=embed)
+            try:
+                await channel.send(content="@everyone", embed=embed)
+            except Forbidden:
+                print("Error: Missing Permissions")
+                print("Passing error..")
         
 
 @tasks.loop(hours=2)
