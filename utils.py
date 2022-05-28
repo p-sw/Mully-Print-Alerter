@@ -39,7 +39,7 @@ class DB:
     @staticmethod
     def sql_before(func):
         async def wrapper(self, sqls):
-            sqls = [sql.replace('\n', '') for sql in sqls.split(';')]
+            sqls = [sql.replace('\n', '').lstrip(" ") for sql in sqls.split(';')]
             try:
                 sqls.remove('')
             except ValueError:
