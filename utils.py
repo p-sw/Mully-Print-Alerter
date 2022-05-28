@@ -58,5 +58,5 @@ class DB:
     @sql_before
     async def execute_get(self, sqls, cursor):
         for command in sqls:
-            cursor = cursor.execute(command)
+            cursor.execute(command)
         return cursor.fetchall()
