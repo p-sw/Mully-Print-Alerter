@@ -13,8 +13,8 @@ async def on_ready():
     print(f"Ready for {bot.user}")
     print("Preparing db..")
     initial_sql = '''
-    CREATE TABLE IF NOT EXISTS regist_info (channel_id string);
-    CREATE TABLE IF NOT EXISTS board_history (title string, factor string);
+    CREATE TABLE IF NOT EXISTS regist_info (channel_id text);
+    CREATE TABLE IF NOT EXISTS board_history (title text, factor text);
     '''
     await db.execute(initial_sql)
     print("Preparing tasks..")
@@ -58,10 +58,10 @@ async def check_news():
         sql_insert = ""
         freshes = []
         for dt in fresh_data:
-            sql_query_exists = f'SELECT * FROM board_history WHERE factor="{dt[1]}"'
+            sql_query_exists = f"SELECT * FROM board_history WHERE factor='{dt[1]}'"
             db_result = await db.execute_get(sql_query_exists)
             if not db_result:
-                sql_insert += f'INSERT INTO board_history VALUES ("{dt[0]}", "{dt[1]}");'
+                sql_insert += f"INSERT INTO board_history VALUES ('{dt[0]}', '{dt[1]}');"
                 print(f"New value found ({dt[0]}, {dt[1]})")
                 freshes.append(dt)
             else:
