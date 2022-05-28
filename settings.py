@@ -2,7 +2,11 @@ import os
 from urllib.parse import urlparse
 
 target_url = "http://bupyeong.icehs.kr/boardCnts/list.do?boardID=290173&m=0903&s=bupyeong"
-guild_id=["939031979893088328", "979944212051148813"]
+guild_id=[
+    "939031979893088328", 
+    "979944212051148813",
+    "951452912456958052"
+]
 
 DB_URL = os.environ.get('DATABASE_URL')
 PARSED_URL = urlparse(DB_URL)
