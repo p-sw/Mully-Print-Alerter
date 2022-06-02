@@ -1,3 +1,4 @@
+print('Starting')
 import os
 import discord
 from discord.errors import Forbidden
@@ -5,9 +6,17 @@ from discord.ext import tasks
 from discord.embeds import Embed
 from utils import DB, get_news, factor_to_link, get_files
 from settings import guild_id
+print('Import END')
 
+print('Bot Init')
 bot = discord.Bot()
+print('Bot Init End')
 db = DB()
+print('DB Init End')
+
+@bot.event
+async def on_connect():
+    print('Connected to discord.')
 
 @bot.event
 async def on_ready():
@@ -75,5 +84,5 @@ async def check_news():
         await db.execute(sql_insert)
     print("Done!")
 
-
+print('Starting Bot')
 bot.run(os.environ.get("token"))
